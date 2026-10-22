@@ -27,7 +27,14 @@ def load_artifacts(directory):
 def create_app(model_dir=None):
     app = Flask(__name__)
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024
-    CORS(app, resources={r'/api/*':{'origins':os.getenv('CORS_ORIGINS','http://localhost:5173,http://127.0.0.1:5173').split(',')}})
+    origins = [origin.strip().rstrip('/') for origin in os.getenv(
+        'CORS_ORIGINS', 'http://localhost:5173,http://127.0.0.1:5173'
+    ).split(',') if origin.strip()]
+    CORS(app, resources={r'/api/.*': {
+        'origins': origins,
+        'methods': ['GET', 'POST', 'OPTIONS'],
+        'allow_headers': ['Content-Type'],
+    }})
     try:
         bundle, report = load_artifacts(Path(model_dir) if model_dir else ROOT/'models')
         artifact_error = None

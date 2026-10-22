@@ -27,7 +27,7 @@ npm install
 npm run dev
 ```
 
-Open the URL Vite prints, normally http://localhost:5173. Vite proxies `/api` to Flask. Do not use Vite preview alone to exercise the API: the development proxy is configured on the dev server. A production deployment must route `/api` to Flask or build with `VITE_API_BASE_URL=https://your-backend/api`. Flask's built-in server is for local development.
+Open the URL Vite prints, normally http://localhost:5173. Vite proxies `/api` to Flask. Do not use Vite preview alone to exercise the API: the development proxy is configured on the dev server. A production deployment must route `/api` to Flask or build with `VITE_API_BASE_URL=https://pattern-heart-api.onrender.com`. Flask's built-in server is for local development.
 
 With the current installed environment and supplied trained artifacts, startup only requires:
 
@@ -162,3 +162,26 @@ This small, historical Cleveland cohort is not representative of all populations
 - Live HTTP smoke checks: prediction route served successfully; Vite-proxied `/api/health` returned `models_ready: true`.
 - Browser visual and interaction QA was unavailable because no in-app browser connection was exposed. Responsive styling and accessibility controls are implemented but have not been visually verified.
 - Joblib emitted a non-blocking macOS physical-core detection warning; training and inference completed successfully.
+
+## Vercel frontend + Render backend
+
+Vercel project settings:
+
+| Setting | Value |
+| --- | --- |
+| Root Directory | `frontend` |
+| Framework Preset | Vite |
+| Install Command | `npm install` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Environment variable | `VITE_API_BASE_URL=https://pattern-heart-api.onrender.com` |
+
+Set the variable for Production and any Preview environments you intend to use, then deploy/redeploy. Vite embeds environment values at build time. `frontend/.env.example` documents the setting; keep the variable absent for ordinary local development through the unchanged Vite `/api` proxy. A backend origin, a trailing slash, or an existing `/api` suffix all resolve to exactly one `/api` prefix in requests.
+
+`frontend/vercel.json` supplies a [single-page application rewrite](https://vercel.com/docs/routing/rewrites) to `index.html`, so direct visits and refreshes of `/predict` and `/compare` reach React Router. Overview has no backend data dependency. Predict loads `/api/features` and posts to `/api/predict`; Compare Models loads `/api/metrics`. All use the shared API client.
+
+On Render, set `CORS_ORIGINS` to the **exact deployed frontend origin**, for example `https://YOUR-PROJECT.vercel.app`. Include a custom domain or specific preview URLs only when needed, separated by commas. You may also include `http://localhost:5173,http://127.0.0.1:5173` if local development needs to call Render directly. Use origins without path components. Restart/redeploy the backend after changing this setting or applying the CORS update. No Vercel origin is hardcoded because the frontend deployment URL has not yet been supplied. Do not allow all `*.vercel.app` sites or use unrestricted CORS.
+
+CORS is limited to `/api/` resources, GET/POST/OPTIONS, and the Content-Type request header; JSON prediction preflights are tested. Requests from unrelated origins receive no CORS allow-origin header. The live service still needs its actual production allowlist configured; local passing tests cannot configure Render remotely.
+
+Deployment verification performed: the production build with the supplied Render environment value passes, URL normalization tests pass (`node --test tests/api.test.js`), ESLint passes, and all 15 backend pytest tests pass. The live Render health endpoint returns `models_ready: true`; live feature metadata, metrics, and sample prediction requests were also checked. Existing non-blocking bundle-size and macOS Joblib warnings remain. Final browser verification from the actual deployed frontend origin is still required after setting CORS: open Overview, submit Predict, load Compare Models, and refresh `/predict` and `/compare` directly.

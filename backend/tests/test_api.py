@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import tempfile
 import unittest
@@ -81,6 +82,31 @@ class ApiTests(unittest.TestCase):
                 self.assertEqual(response.status_code,200)
                 self.assertEqual(response.json,expected)
             self.assertEqual(load.call_count,1)
+
+    def test_explicit_deployment_cors_allowlist(self):
+        allowed = 'https://pattern-heart-test.vercel.app'
+        with patch.dict(os.environ,{'CORS_ORIGINS': f' {allowed}/ , http://localhost:5173 '}):
+            client = create_app().test_client()
+        for endpoint in ['/api/health','/api/features','/api/models','/api/metrics']:
+            with self.subTest(endpoint=endpoint):
+                response = client.get(endpoint,headers={'Origin':allowed})
+                self.assertEqual(response.status_code,200)
+                self.assertEqual(response.headers.get('Access-Control-Allow-Origin'),allowed)
+        headers = {'Origin':allowed,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'Content-Type'}
+        preflight = client.options('/api/predict',headers=headers)
+        self.assertEqual(preflight.status_code,200)
+        self.assertEqual(preflight.headers.get('Access-Control-Allow-Origin'),allowed)
+        self.assertIn('POST',preflight.headers['Access-Control-Allow-Methods'])
+        self.assertIn('Content-Type',preflight.headers['Access-Control-Allow-Headers'])
+        prediction = client.post('/api/predict',json=PROFILE,headers={'Origin':allowed})
+        self.assertEqual(prediction.status_code,200)
+        self.assertEqual(prediction.headers.get('Access-Control-Allow-Origin'),allowed)
+        for origin in ['https://unrelated.vercel.app',allowed+'.untrusted.example']:
+            with self.subTest(origin=origin):
+                blocked = client.get('/api/features',headers={'Origin':origin})
+                self.assertIsNone(blocked.headers.get('Access-Control-Allow-Origin'))
+                blocked_preflight = client.options('/api/predict',headers={**headers,'Origin':origin})
+                self.assertIsNone(blocked_preflight.headers.get('Access-Control-Allow-Origin'))
 
     def test_missing_fields(self):
         response = self.client.post('/api/predict',json={})
