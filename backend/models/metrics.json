@@ -1,0 +1,107 @@
+{
+  "preferred": "naive_bayes",
+  "selection_criterion": "Highest mean training cross-validation disease-positive recall, then F1; exact ties use fixed model/candidate order.",
+  "models": {
+    "knn": {
+      "name": "K-Nearest Neighbours",
+      "parameters": {
+        "classifier__n_neighbors": 3,
+        "classifier__weights": "uniform"
+      },
+      "cv_recall": 0.8007905138339921,
+      "cv_f1": 0.8041685405854828,
+      "cv_recall_std": 0.080349033159226,
+      "accuracy": 0.8688524590163934,
+      "precision": 0.8125,
+      "recall": 0.9285714285714286,
+      "f1": 0.8666666666666667,
+      "confusion_matrix": [
+        [
+          27,
+          6
+        ],
+        [
+          2,
+          26
+        ]
+      ]
+    },
+    "naive_bayes": {
+      "name": "Gaussian Naive Bayes",
+      "parameters": {
+        "classifier__var_smoothing": 1e-11
+      },
+      "cv_recall": 0.8549407114624505,
+      "cv_f1": 0.7832264016175612,
+      "cv_recall_std": 0.12024908143007638,
+      "accuracy": 0.7704918032786885,
+      "precision": 0.6944444444444444,
+      "recall": 0.8928571428571429,
+      "f1": 0.78125,
+      "confusion_matrix": [
+        [
+          22,
+          11
+        ],
+        [
+          3,
+          25
+        ]
+      ]
+    },
+    "decision_tree": {
+      "name": "Decision Tree",
+      "parameters": {
+        "classifier__class_weight": "balanced",
+        "classifier__max_depth": 2,
+        "classifier__min_samples_leaf": 10
+      },
+      "cv_recall": 0.8189723320158102,
+      "cv_f1": 0.7399738562091503,
+      "cv_recall_std": 0.09611003343769361,
+      "accuracy": 0.7213114754098361,
+      "precision": 0.6410256410256411,
+      "recall": 0.8928571428571429,
+      "f1": 0.746268656716418,
+      "confusion_matrix": [
+        [
+          19,
+          14
+        ],
+        [
+          3,
+          25
+        ]
+      ]
+    }
+  },
+  "dataset": {
+    "source": "https://archive.ics.uci.edu/static/public/45/heart+disease.zip",
+    "sha256": "a74b7efa387bc9d108d7d0115d831fe9b414b29ae7124f331b622b4efa0427c8",
+    "rows": 303,
+    "train_rows": 242,
+    "test_rows": 61,
+    "missing_values": 6,
+    "train_class_counts": [
+      131,
+      111
+    ],
+    "test_class_counts": [
+      33,
+      28
+    ]
+  },
+  "methodology": {
+    "random_state": 42,
+    "test_fraction": 0.2,
+    "cv_folds": 5,
+    "positive_label": 1,
+    "confusion_matrix_axes": "Rows: actual [0, 1]; columns: predicted [0, 1]."
+  },
+  "versions": {
+    "python": "3.14.2",
+    "sklearn": "1.9.1",
+    "numpy": "2.5.4",
+    "pandas": "3.1.0"
+  }
+}

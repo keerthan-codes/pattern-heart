@@ -1,0 +1,10 @@
+import { Link } from 'react-router-dom'
+import { ArrowRight, Activity, SlidersHorizontal, ChartNoAxesColumnIncreasing } from 'lucide-react'
+import { modelDescriptions } from '../services/models'
+export default function Overview() {
+  return <>
+    <section className="hero"><div className="eyebrow"><span className="dot" /> A PATTERN RECOGNITION STUDY</div><h1>Disease prediction,<br /><span>made understandable.</span></h1><p>Enter clinical measurements, explore predictions from three machine learning models, and compare how accurately they recognize heart disease patterns.</p><div className="actions"><Link className="button" to="/predict">Start Prediction <ArrowRight size={17} /></Link><Link className="button secondary" to="/compare">Compare Models</Link></div><div className="hero-note">Built for education. Grounded in real data.</div></section>
+    <section className="section"><div className="section-heading"><div><div className="eyebrow">THREE WAYS TO RECOGNIZE A PATTERN</div><h2>Different approaches. Shared evidence.</h2></div><p>Compare three classic classifiers<br />on the same Cleveland dataset.</p></div><div className="cards">{modelDescriptions.map((m, i) => <article className="card model-card" key={m.id}><span className="model-symbol">{m.short}</span><span className="card-index">0{i + 1}</span><h3>{m.name}</h3><p>{m.description}</p><span className="tag">{m.tag}</span></article>)}</div></section>
+    <section className="how section"><div className="eyebrow">FROM MEASUREMENTS TO UNDERSTANDING</div><h2>A clear path through the process.</h2><div className="cards">{[[SlidersHorizontal,'Enter a clinical profile','Provide the 13 measurements used by the original dataset.'],[Activity,'See three predictions','Each trained classifier independently evaluates the same inputs.'],[ChartNoAxesColumnIncreasing,'Explore the evidence','Compare held-out results and understand how a model is selected.']].map(([Icon,title,body],i)=><article key={title}><Icon size={24} /><div className="step">STEP 0{i+1}</div><h3>{title}</h3><p>{body}</p></article>)}</div></section>
+  </>
+}
